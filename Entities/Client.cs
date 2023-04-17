@@ -2,7 +2,7 @@
 {
     public class Client
     {
-        public Guid Id = new();
+        public Guid Id = Guid.NewGuid();
         public string Name { get; set; }
         public string Cpf { get; set; }
     }
