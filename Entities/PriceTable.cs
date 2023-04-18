@@ -3,5 +3,7 @@
     public class PriceTable
     {
         public float PriceHour { get; set; }
+
+        public float PriceMinute { get; set; }
     }
 }

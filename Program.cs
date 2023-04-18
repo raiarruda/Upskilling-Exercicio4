@@ -11,6 +11,8 @@ namespace Estacionamento
             var vehicles = new List<Vehicle>();
             var checkInOutsList = new List<CheckInOut>();
             var priceTable = new PriceTable();
+            //Preço padrão
+            priceTable.PriceMinute = Utils.loadPrice();
 
             while (true)
             {
@@ -22,7 +24,8 @@ namespace Estacionamento
                 Console.WriteLine("4 - Registrar Entrada de Veículo");
                 Console.WriteLine("5 - Registrar Saída de Veículo");
                 Console.WriteLine("6 - Listar Movimentações");
-                Console.WriteLine("7 - Sair");
+                Console.WriteLine("7 - Atualizar Preço (R$ " + priceTable.PriceMinute.ToString() + ")");
+                Console.WriteLine("8 - Sair");
                 var opcao = Console.ReadLine();
                 var sair = false;
                 switch (opcao)
@@ -57,18 +60,18 @@ namespace Estacionamento
                     case "5":
                         Console.Clear();
                         Utils.CheckoutVehicle(checkInOutsList, priceTable);
-                        //TODO: colocar no arquivo
+                        Console.WriteLine(checkInOutsList);
                         break;
                     case "6":
                         Console.Clear();
-                        Utils.CheckInOutList(checkInOutsList);
+                        Utils.CheckInOutList();
                         break;
                     case "7":
-                        Environment.Exit(0);
+                        Console.Clear();
+                        priceTable.PriceMinute = Utils.UpdateHourPrice().PriceMinute;
                         break;
                     case "8":
-                        Console.Clear();
-                        priceTable.PriceHour = Utils.UpdateHourPrice().PriceHour;
+                        Environment.Exit(0);
                         break;
                 }
             }

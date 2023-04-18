@@ -1,4 +1,6 @@
 ﻿using Console_App_Exercicio.Entities;
+using System;
+using System.ComponentModel;
 using System.Text.Json;
 
 
@@ -88,8 +90,9 @@ namespace Console_App_Exercicio
 
         public static CheckInOut FindCheckIn(List<CheckInOut> checkInOutsList, string vehiclePlate)
         {
+            List<CheckInOut> checks = ReadFile<CheckInOut>("checksInOut.json");
             CheckInOut vehicleCheck = new();
-            foreach (CheckInOut checkInOut in checkInOutsList)
+            foreach (CheckInOut checkInOut in checks)
             {
                 if (checkInOut.VehicleLicense == vehiclePlate)
                 {
@@ -109,13 +112,33 @@ namespace Console_App_Exercicio
                 Console.WriteLine("Placa incorreta!");
                 Thread.Sleep(1000);
                 CheckoutVehicle(checkInOutsList, priceTable);
-                //TODO: atualizar arquivo ?
                 return;
             }
 
             checkIn.Exit = DateTime.Now;
-            TimeSpan consumedTime = (checkIn.Exit - checkIn.Entrance);
-            checkIn.Value = consumedTime.TotalHours * priceTable.PriceHour;
+
+            TimeSpan diff = checkIn.Exit - checkIn.Entrance;
+
+            int minutes = (int)diff.TotalMinutes;
+
+            checkIn.Value = minutes * priceTable.PriceMinute;
+
+            /** UPDATE JSON INFO **/
+            List<CheckInOut> checks = ReadFile<CheckInOut>("checksInOut.json");
+
+            // Filter the JSON object to identify the specific lines that need to be updated
+            var filteredChecks = checks.Where(p => p.VehicleLicense == vehiclePlate);
+
+            // Update the appropriate fields or values in the JSON object
+            foreach (CheckInOut check in filteredChecks)
+            {
+                check.Exit = checkIn.Exit;
+                check.Value = checkIn.Value;
+            }
+
+            WriteFile("checksInOut.json", checks);
+
+            /*********************/
 
             Console.WriteLine($"O veículo {checkIn.VehicleLicense} teve a entrada registrada as {checkIn.Entrance} e a saída as {checkIn.Exit}");
             Console.WriteLine($"O valor a ser pago é de: {checkIn.Value}");
@@ -134,6 +157,19 @@ namespace Console_App_Exercicio
             Console.ReadKey();
         }
 
+        public static int loadPrice()
+        {
+            //Valor Padrão
+            int price = 2;
+
+            String strPrice = ReadTxtFile("price.txt");
+            strPrice = (strPrice != "" ? strPrice : "0");
+
+            int filePrice = int.Parse(strPrice);
+            if (filePrice > 0) price = filePrice;
+            return price;
+        }
+
         public static PriceTable UpdateHourPrice() 
         {
             PriceTable priceTable = new();
@@ -141,7 +177,9 @@ namespace Console_App_Exercicio
             var hourPrice = float.TryParse(Console.ReadLine(), out var value);
             if (hourPrice)
             {
-                priceTable.PriceHour = value;
+                priceTable.PriceMinute = value;
+
+                WriteTxtFile("price.txt", value.ToString());
 
                 Console.WriteLine("\r\nPressione alguma tecla para voltar ao menu incial");
                 Console.ReadKey();
@@ -179,6 +217,30 @@ namespace Console_App_Exercicio
             }
             
             return data;
+        }
+
+        public static void WriteTxtFile(string fileName, String text)
+        {
+
+            string dataDirectory = Path.Combine(rootDirectory, "data");
+            Directory.CreateDirectory(dataDirectory);
+            string filePath = dataDirectory + "/" + fileName;
+
+            File.WriteAllText(filePath, text);
+        }
+
+        public static String ReadTxtFile(string fileName)
+        {
+
+            string filePath = dataDirectory + "/" + fileName;
+            String txt = "";
+
+            if (File.Exists(filePath))
+            {
+                txt = File.ReadAllText(filePath);
+            }
+
+            return txt;
         }
     }
 }
