@@ -1,4 +1,5 @@
 ﻿using Console_App_Exercicio.Entities;
+using System.Text.Json;
 
 namespace Console_App_Exercicio
 {
@@ -25,12 +26,23 @@ namespace Console_App_Exercicio
 
             return client;
         }
-        public static void ListCostumer(List<Client> clients) 
+        public static void ListCostumer() 
         {
-            Console.WriteLine("Clientes cadastrados:");
-            clients.ForEach(client => {
-                Console.WriteLine($"ID: {client.Id} Nome: {client.Name} CPF: {client.Cpf}");
-            });
+            List<Client> clients = ReadFile<Client>("clients.json");
+
+            if (clients.Count() == 0)
+            {
+                Console.WriteLine("Não existem clientes cadastrados");
+
+            }
+            else
+            {
+                Console.WriteLine("Clientes cadastrados:");
+                clients.ForEach(client => {
+                    Console.WriteLine($"ID: {client.Id} Nome: {client.Name} CPF: {client.Cpf}");
+                });
+            }
+
             Console.WriteLine("\r\nPressione alguma tecla para voltar ao menu incial");
             Console.ReadKey();
         }
@@ -79,9 +91,12 @@ namespace Console_App_Exercicio
 
         }
 
-        public static CheckInOut FindCheckIn(List<CheckInOut> checkInOutsList, string vehiclePlate)
+        public static CheckInOut FindCheckIn( string vehiclePlate)
         {
             CheckInOut vehicleCheck = new();
+
+            List<CheckInOut> checkInOutsList = ReadFile<CheckInOut>("checkInOuts.json");
+
             foreach (CheckInOut checkInOut in checkInOutsList)
             {
                 if (checkInOut.VehicleLicense == vehiclePlate)
@@ -95,7 +110,7 @@ namespace Console_App_Exercicio
         {
             Console.WriteLine("Digite a placa do veiculo que esta saindo: ");
             string vehiclePlate = Console.ReadLine();
-            CheckInOut checkIn = FindCheckIn(checkInOutsList, vehiclePlate);
+            CheckInOut checkIn = FindCheckIn(vehiclePlate);
 
             if(vehiclePlate == "" || vehiclePlate == null || checkIn.VehicleLicense == null || checkIn.VehicleLicense == "")
             {
@@ -115,12 +130,23 @@ namespace Console_App_Exercicio
             Console.WriteLine("\r\nPressione alguma tecla para voltar ao menu incial");
             Console.ReadKey();
         }
-        public static void CheckInOutList(List<CheckInOut> checkInOutsList)
+        public static void CheckInOutList()
         {
-            Console.WriteLine("Entradas cadastradas:");
-            checkInOutsList.ForEach(check => {
-                Console.WriteLine($"Placa: {check.VehicleLicense} Entrada: {check.Entrance} Saída: {check.Exit} Valor: {check.Value}");
-            });
+            List<CheckInOut> checkInOutsList = ReadFile<CheckInOut>("checkInOuts.json");
+
+            if (checkInOutsList.Count() == 0)
+            {
+                Console.WriteLine("Não existem entradas cadastradas");
+
+            }
+            else
+            {
+                Console.WriteLine("Entradas cadastradas:");
+                checkInOutsList.ForEach(check => {
+                    Console.WriteLine($"Placa: {check.VehicleLicense} Entrada: {check.Entrance} Saída: {check.Exit} Valor: {check.Value}");
+                });
+            }
+
             Console.WriteLine("\r\nPressione alguma tecla para voltar ao menu incial");
             Console.ReadKey();
         }
@@ -143,6 +169,40 @@ namespace Console_App_Exercicio
             Console.WriteLine("\r\nPressione alguma tecla para voltar ao menu incial");
             Console.ReadKey();
             return priceTable;
+        }
+
+        public static void SaveFile<T>(IEnumerable<T> file, string fileName)
+        {
+
+            var rootDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
+            string dataDirectory = Path.Combine(rootDirectory, "data");
+
+            string filePath = dataDirectory + "/" + fileName;
+
+            if (!File.Exists(filePath))
+                Directory.CreateDirectory(dataDirectory);
+
+            string jsonString = JsonSerializer.Serialize(file);
+            File.WriteAllText(filePath, jsonString);
+
+        }
+
+        public static List<T> ReadFile<T>(string fileName)
+        {
+            var rootDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
+            string dataDirectory = Path.Combine(rootDirectory, "data");
+
+            string filePath = dataDirectory + "/" + fileName;
+
+            List<T> data = new List<T>();
+
+            if (File.Exists(filePath))
+            {
+                string jsonData = File.ReadAllText(filePath);
+                data = JsonSerializer.Deserialize<List<T>>(jsonData);
+            }
+
+            return data;
         }
     }
 }
