@@ -1,9 +1,15 @@
 ﻿using Console_App_Exercicio.Entities;
+using System.Text.Json;
+
+
 
 namespace Console_App_Exercicio
 {
     public class Utils
     {
+        static readonly string rootDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
+        static readonly string dataDirectory = Path.Combine(rootDirectory, "data");
+
         public static Client RegisterCostumer()
         {
             Client client = new();
@@ -25,9 +31,10 @@ namespace Console_App_Exercicio
 
             return client;
         }
-        public static void ListCostumer(List<Client> clients) 
+        public static void ListCostumer() 
         {
             Console.WriteLine("Clientes cadastrados:");
+            List<Client> clients = ReadFile<Client>("clients.json");
             clients.ForEach(client => {
                 Console.WriteLine($"ID: {client.Id} Nome: {client.Name} CPF: {client.Cpf}");
             });
@@ -102,6 +109,7 @@ namespace Console_App_Exercicio
                 Console.WriteLine("Placa incorreta!");
                 Thread.Sleep(1000);
                 CheckoutVehicle(checkInOutsList, priceTable);
+                //TODO: atualizar arquivo ?
                 return;
             }
 
@@ -115,9 +123,10 @@ namespace Console_App_Exercicio
             Console.WriteLine("\r\nPressione alguma tecla para voltar ao menu incial");
             Console.ReadKey();
         }
-        public static void CheckInOutList(List<CheckInOut> checkInOutsList)
+        public static void CheckInOutList()
         {
             Console.WriteLine("Entradas cadastradas:");
+            List<CheckInOut> checkInOutsList = ReadFile<CheckInOut>("checksInOut.json");
             checkInOutsList.ForEach(check => {
                 Console.WriteLine($"Placa: {check.VehicleLicense} Entrada: {check.Entrance} Saída: {check.Exit} Valor: {check.Value}");
             });
@@ -143,6 +152,33 @@ namespace Console_App_Exercicio
             Console.WriteLine("\r\nPressione alguma tecla para voltar ao menu incial");
             Console.ReadKey();
             return priceTable;
+        }
+
+        public static void WriteFile<T>(string fileName, List<T> data)
+        {
+           
+            string dataDirectory = Path.Combine(rootDirectory, "data");
+            Directory.CreateDirectory(dataDirectory);
+            string filePath = dataDirectory + "/" + fileName;
+
+            string jsonString = JsonSerializer.Serialize(data);
+            File.WriteAllText(filePath, jsonString);
+        }
+
+        public static List<T> ReadFile<T>(string fileName)
+        {
+            
+            string filePath = dataDirectory + "/" + fileName;
+            
+            List<T> data = new List<T>();
+
+            if(File.Exists(filePath))
+            {
+                string jsonData = File.ReadAllText(filePath);
+                data = JsonSerializer.Deserialize<List<T>>(jsonData);
+            }
+            
+            return data;
         }
     }
 }

@@ -7,7 +7,8 @@ namespace Estacionamento
     {
         static void Main(string[] args)
         {
-            var clientes = new List<Client>();
+            var clients = new List<Client>();
+            var vehicles = new List<Vehicle>();
             var checkInOutsList = new List<CheckInOut>();
             var priceTable = new PriceTable();
 
@@ -31,24 +32,32 @@ namespace Estacionamento
                         Client client = Utils.RegisterCostumer();
                         if(client.Name != null && client.Name != "")
                         {
-                            clientes.Add(client); 
+                            clients.Add(client); 
+                            Utils.WriteFile("clients.json", clients);
                         }                        
                         break;
                     case "2":
                         Console.Clear();
-                        Utils.ListCostumer(clientes);
+                        Utils.ListCostumer();
                         break;
                     case "3":
                         Console.Clear();
-                        Utils.RegisterVehicle();
+                        Vehicle vehicle = Utils.RegisterVehicle();
+                        //TODO: verificar 
+                        vehicles.Add(vehicle);
+                        Utils.WriteFile("vehicles.json", vehicles);
+                        
                         break;
                     case "4":
                         Console.Clear();
                         checkInOutsList.Add(Utils.CheckinVehicle());
+
+                        Utils.WriteFile("checksInOut.json",checkInOutsList);
                         break;
                     case "5":
                         Console.Clear();
                         Utils.CheckoutVehicle(checkInOutsList, priceTable);
+                        //TODO: colocar no arquivo
                         break;
                     case "6":
                         Console.Clear();
